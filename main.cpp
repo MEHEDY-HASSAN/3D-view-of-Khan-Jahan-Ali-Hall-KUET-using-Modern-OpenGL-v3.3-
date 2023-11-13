@@ -42,9 +42,10 @@ void Fan(Cube& cube, Shader& lightingShader, glm::mat4 alTogether);
 void chair(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader, glm::mat4 alTogether);
 void stair(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader, glm::mat4 alTogether);
 void pond(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader, glm::mat4 alTogether);
-void drawFish(Shader& lightingShader, glm::mat4 model);
-void road(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture);
-
+void FazlulHaqueHall(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture);
+//void drawFish(Shader& lightingShader, glm::mat4 model);
+//void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture, unsigned int& cVAO);
+void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture);
 // settings
 
 const unsigned int SCR_WIDTH = 800;
@@ -77,7 +78,7 @@ float lookAtX = 0.0, lookAtY = 0.0, lookAtZ = 0.0;
 glm::vec3 V = glm::vec3(0.0f, 1.0f, 0.0f);
 BasicCamera basic_camera(eyeX, eyeY, eyeZ, lookAtX, lookAtY, lookAtZ, V);
 float rotateFan = 0;
-Sphere *sphere;
+Sphere2 *sphere;
 
 // positions of the point lights
 glm::vec3 pointLightPositions[] = {
@@ -139,7 +140,271 @@ float deltaTime = 0.0f;    // time between current frame and last frame
 float lastFrame = 0.0f;
 
 
-vector<float>cntrlPoints = {
+    unsigned int cubeVAO, cubeVBO, cubeEBO;
+    unsigned int cVAO, cVBO, cEBO;
+
+    void drawCube(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 model = glm::mat4(1.0f), float r = 1.0f, float g = 1.0f, float b = 1.0f)
+    {
+        lightingShader.use();
+
+        lightingShader.setVec3("material.ambient", glm::vec3(r, g, b));
+        lightingShader.setVec3("material.diffuse", glm::vec3(r, g, b));
+        lightingShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+        lightingShader.setFloat("material.shininess", 32.0f);
+
+        lightingShader.setMat4("model", model);
+
+        glBindVertexArray(cubeVAO);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    }
+    void drawCylinder(unsigned int& cVAO, Shader& lightingShader, glm::mat4 model, float r, float g, float b)
+    {
+        lightingShader.use();
+
+        lightingShader.setVec3("material.ambient", glm::vec3(r, g, b));
+        lightingShader.setVec3("material.diffuse", glm::vec3(r, g, b));
+        lightingShader.setVec3("material.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        lightingShader.setFloat("material.shininess", 60.0f);
+
+        lightingShader.setMat4("model", model);
+
+        glBindVertexArray(cVAO);
+        glDrawElements(GL_TRIANGLES, 120, GL_UNSIGNED_INT, 0);
+    }
+
+class Curve
+{
+public:
+    vector<float> cntrlPoints;
+    vector <float> coordinates;
+    vector <float> normals;
+    vector <int> indices;
+    vector <float> vertices;
+    const double pi = 3.14159265389;
+    const int nt = 40;
+    const int ntheta = 20;
+    Curve(vector<float> &tmp)
+    {
+        this->cntrlPoints = tmp;
+        this->fishVAO = hollowBezier(cntrlPoints.data(), ((unsigned int)cntrlPoints.size() / 3) - 1);
+        cout << cntrlPoints.size() << endl;
+        cout << coordinates.size() << endl;
+        cout << normals.size() << endl;
+        cout << indices.size() << endl;
+        cout << vertices.size() << endl;
+    }
+    ~Curve()
+    {
+        glDeleteVertexArrays(1, &fishVAO);
+        glDeleteVertexArrays(1, &bezierVAO);
+        glDeleteBuffers(1, &bezierVBO);
+        glDeleteBuffers(1, &bezierEBO);
+    }
+    void draw(Shader& lightingShader, glm::mat4 model)
+    {
+        /// Fish
+        lightingShader.use();
+        lightingShader.setMat4("model", model);
+        lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.6f, 0.0f));
+        lightingShader.setVec3("material.diffuse", glm::vec3(1.0f, 0.6f, 0.0f));
+        lightingShader.setVec3("material.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        lightingShader.setFloat("material.shininess", 32.0f);
+
+        glBindVertexArray(fishVAO);
+        glDrawElements(GL_TRIANGLES,                    // primitive type
+            (unsigned int)indices.size(),          // # of indices
+            GL_UNSIGNED_INT,                 // data type
+            (void*)0);                       // offset to indices
+
+        // unbind VAO
+        glBindVertexArray(0);
+        /// End Fish
+    }
+private:
+    unsigned int fishVAO;
+    unsigned int bezierVAO;
+    unsigned int bezierVBO;
+    unsigned int bezierEBO;
+
+
+    unsigned int drawControlPoints()
+    {
+        unsigned int controlPointVAO;
+        unsigned int controlPointVBO;
+
+        glGenVertexArrays(1, &controlPointVAO);
+        glGenBuffers(1, &controlPointVBO);
+
+        glBindVertexArray(controlPointVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, controlPointVBO);
+        glBufferData(GL_ARRAY_BUFFER, (unsigned int)cntrlPoints.size() * sizeof(float), cntrlPoints.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        return controlPointVAO;
+    }
+
+    long long nCr(int n, int r)
+    {
+        if (r > n / 2)
+            r = n - r; // because C(n, r) == C(n, n - r)
+        long long ans = 1;
+        int i;
+
+        for (i = 1; i <= r; i++)
+        {
+            ans *= n - r + i;
+            ans /= i;
+        }
+
+        return ans;
+    }
+    void BezierCurve(double t, float xy[2], GLfloat ctrlpoints[], int L)
+    {
+        double y = 0;
+        double x = 0;
+        t = t > 1.0 ? 1.0 : t;
+        for (int i = 0; i < L + 1; i++)
+        {
+            long long ncr = nCr(L, i);
+            double oneMinusTpow = pow(1 - t, double(L - i));
+            double tPow = pow(t, double(i));
+            double coef = oneMinusTpow * tPow * ncr;
+            x += coef * ctrlpoints[i * 3];
+            y += coef * ctrlpoints[(i * 3) + 1];
+
+        }
+        xy[0] = float(x);
+        xy[1] = float(y);
+    }
+
+    unsigned int hollowBezier(GLfloat ctrlpoints[], int L)
+    {
+        int i, j;
+        float x, y, z, r;                //current coordinates
+        float theta;
+        float nx, ny, nz, lengthInv;    // vertex normal
+
+
+        const float dtheta = 2 * pi / ntheta;        //angular step size
+
+        float t = 0;
+        float dt = 1.0 / nt;
+        float xy[2];
+
+        for (i = 0; i <= nt; ++i)              //step through y
+        {
+            BezierCurve(t, xy, ctrlpoints, L);
+            r = xy[0];
+            y = xy[1];
+            theta = 0;
+            t += dt;
+            lengthInv = 1.0 / r;
+
+            for (j = 0; j <= ntheta; ++j)
+            {
+                double cosa = cos(theta);
+                double sina = sin(theta);
+                z = r * cosa;
+                x = r * sina;
+
+                coordinates.push_back(x);
+                coordinates.push_back(y);
+                coordinates.push_back(z);
+
+                // normalized vertex normal (nx, ny, nz)
+                // center point of the circle (0,y,0)
+                nx = (x - 0) * lengthInv;
+                ny = (y - y) * lengthInv;
+                nz = (z - 0) * lengthInv;
+
+                normals.push_back(nx);
+                normals.push_back(ny);
+                normals.push_back(nz);
+
+                theta += dtheta;
+            }
+        }
+        // generate index list of triangles
+        // k1--k1+1
+        // |  / |
+        // | /  |
+        // k2--k2+1
+
+        int k1, k2;
+        for (int i = 0; i < nt; ++i)
+        {
+            k1 = i * (ntheta + 1);     // beginning of current stack
+            k2 = k1 + ntheta + 1;      // beginning of next stack
+
+            for (int j = 0; j < ntheta; ++j, ++k1, ++k2)
+            {
+                // k1 => k2 => k1+1
+                indices.push_back(k1);
+                indices.push_back(k2);
+                indices.push_back(k1 + 1);
+
+                // k1+1 => k2 => k2+1
+                indices.push_back(k1 + 1);
+                indices.push_back(k2);
+                indices.push_back(k2 + 1);
+            }
+        }
+
+        size_t count = coordinates.size();
+        for (int i = 0; i < count; i += 3)
+        {
+            //cout << count << ' ' << i + 2 << endl;
+            vertices.push_back(coordinates[i]);
+            vertices.push_back(coordinates[i + 1]);
+            vertices.push_back(coordinates[i + 2]);
+
+            vertices.push_back(normals[i]);
+            vertices.push_back(normals[i + 1]);
+            vertices.push_back(normals[i + 2]);
+        }
+
+        glGenVertexArrays(1, &bezierVAO);
+        glBindVertexArray(bezierVAO);
+
+        // create VBO to copy vertex data to VBO
+        glGenBuffers(1, &bezierVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, bezierVBO);           // for vertex data
+        glBufferData(GL_ARRAY_BUFFER,                   // target
+            (unsigned int)vertices.size() * sizeof(float), // data size, # of bytes
+            vertices.data(),   // ptr to vertex data
+            GL_STATIC_DRAW);                   // usage
+
+        // create EBO to copy index data
+        glGenBuffers(1, &bezierEBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bezierEBO);   // for index data
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER,           // target
+            (unsigned int)indices.size() * sizeof(unsigned int),             // data size, # of bytes
+            indices.data(),               // ptr to index data
+            GL_STATIC_DRAW);                   // usage
+
+        // activate attrib arrays
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+
+        // set attrib arrays with stride and offset
+        int stride = 24;     // should be 24 bytes
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, stride, (void*)0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, stride, (void*)(sizeof(float) * 3));
+
+        // unbind VAO, VBO and EBO
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        return bezierVAO;
+    }
+
+};
+
+vector<float>Fish = {
 -0.0100, 1.9950, 5.1000,
 -0.0550, 1.9800, 5.1000,
 -0.0950, 1.9350, 5.1000,
@@ -152,208 +417,10 @@ vector<float>cntrlPoints = {
 0.0400, 0.7300, 5.1000,
 0.1300, 0.6350, 5.1000,
 0.2400, 0.5050, 5.1000,
-}; 
-vector <float> coordinates;
-vector <float> normals;
-vector <int> indices;
-vector <float> vertices;
-const double pi = 3.14159265389;
-const int nt = 40;
-const int ntheta = 20;
-unsigned int fishVAO;
-unsigned int cubeVAO, cubeVBO, cubeEBO;
-void drawCube(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 model = glm::mat4(1.0f), float r = 1.0f, float g = 1.0f, float b = 1.0f)
-{
-    lightingShader.use();
-
-    lightingShader.setVec3("material.ambient", glm::vec3(r, g, b));
-    lightingShader.setVec3("material.diffuse", glm::vec3(r, g, b));
-    lightingShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-    lightingShader.setFloat("material.shininess", 32.0f);
-
-    lightingShader.setMat4("model", model);
-
-    glBindVertexArray(cubeVAO);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-}
-unsigned int drawControlPoints()
-{
-    unsigned int controlPointVAO;
-    unsigned int controlPointVBO;
-
-    glGenVertexArrays(1, &controlPointVAO);
-    glGenBuffers(1, &controlPointVBO);
-
-    glBindVertexArray(controlPointVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, controlPointVBO);
-    glBufferData(GL_ARRAY_BUFFER, (unsigned int)cntrlPoints.size() * sizeof(float), cntrlPoints.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    return controlPointVAO;
-}
-
-long long nCr(int n, int r)
-{
-    if (r > n / 2)
-        r = n - r; // because C(n, r) == C(n, n - r)
-    long long ans = 1;
-    int i;
-
-    for (i = 1; i <= r; i++)
-    {
-        ans *= n - r + i;
-        ans /= i;
-    }
-
-    return ans;
-}
-void BezierCurve(double t, float xy[2], GLfloat ctrlpoints[], int L)
-{
-    double y = 0;
-    double x = 0;
-    t = t > 1.0 ? 1.0 : t;
-    for (int i = 0; i < L + 1; i++)
-    {
-        long long ncr = nCr(L, i);
-        double oneMinusTpow = pow(1 - t, double(L - i));
-        double tPow = pow(t, double(i));
-        double coef = oneMinusTpow * tPow * ncr;
-        x += coef * ctrlpoints[i * 3];
-        y += coef * ctrlpoints[(i * 3) + 1];
-
-    }
-    xy[0] = float(x);
-    xy[1] = float(y);
-}
-
-unsigned int hollowBezier(GLfloat ctrlpoints[], int L)
-{
-    int i, j;
-    float x, y, z, r;                //current coordinates
-    float theta;
-    float nx, ny, nz, lengthInv;    // vertex normal
-
-
-    const float dtheta = 2 * pi / ntheta;        //angular step size
-
-    float t = 0;
-    float dt = 1.0 / nt;
-    float xy[2];
-
-    for (i = 0; i <= nt; ++i)              //step through y
-    {
-        BezierCurve(t, xy, ctrlpoints, L);
-        r = xy[0];
-        y = xy[1];
-        theta = 0;
-        t += dt;
-        lengthInv = 1.0 / r;
-
-        for (j = 0; j <= ntheta; ++j)
-        {
-            double cosa = cos(theta);
-            double sina = sin(theta);
-            z = r * cosa;
-            x = r * sina;
-
-            coordinates.push_back(x);
-            coordinates.push_back(y);
-            coordinates.push_back(z);
-
-            // normalized vertex normal (nx, ny, nz)
-            // center point of the circle (0,y,0)
-            nx = (x - 0) * lengthInv;
-            ny = (y - y) * lengthInv;
-            nz = (z - 0) * lengthInv;
-
-            normals.push_back(nx);
-            normals.push_back(ny);
-            normals.push_back(nz);
-
-            theta += dtheta;
-        }
-    }
-
-    // generate index list of triangles
-    // k1--k1+1
-    // |  / |
-    // | /  |
-    // k2--k2+1
-
-    int k1, k2;
-    for (int i = 0; i < nt; ++i)
-    {
-        k1 = i * (ntheta + 1);     // beginning of current stack
-        k2 = k1 + ntheta + 1;      // beginning of next stack
-
-        for (int j = 0; j < ntheta; ++j, ++k1, ++k2)
-        {
-            // k1 => k2 => k1+1
-            indices.push_back(k1);
-            indices.push_back(k2);
-            indices.push_back(k1 + 1);
-
-            // k1+1 => k2 => k2+1
-            indices.push_back(k1 + 1);
-            indices.push_back(k2);
-            indices.push_back(k2 + 1);
-        }
-    }
-
-    size_t count = coordinates.size();
-    for (int i = 0; i < count; i += 3)
-    {
-        vertices.push_back(coordinates[i]);
-        vertices.push_back(coordinates[i + 1]);
-        vertices.push_back(coordinates[i + 2]);
-
-        vertices.push_back(normals[i]);
-        vertices.push_back(normals[i + 1]);
-        vertices.push_back(normals[i + 2]);
-    }
-
-    unsigned int bezierVAO;
-    glGenVertexArrays(1, &bezierVAO);
-    glBindVertexArray(bezierVAO);
-
-    // create VBO to copy vertex data to VBO
-    unsigned int bezierVBO;
-    glGenBuffers(1, &bezierVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, bezierVBO);           // for vertex data
-    glBufferData(GL_ARRAY_BUFFER,                   // target
-        (unsigned int)vertices.size() * sizeof(float), // data size, # of bytes
-        vertices.data(),   // ptr to vertex data
-        GL_STATIC_DRAW);                   // usage
-
-    // create EBO to copy index data
-    unsigned int bezierEBO;
-    glGenBuffers(1, &bezierEBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bezierEBO);   // for index data
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,           // target
-        (unsigned int)indices.size() * sizeof(unsigned int),             // data size, # of bytes
-        indices.data(),               // ptr to index data
-        GL_STATIC_DRAW);                   // usage
-
-    // activate attrib arrays
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    // set attrib arrays with stride and offset
-    int stride = 24;     // should be 24 bytes
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, stride, (void*)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, false, stride, (void*)(sizeof(float) * 3));
-
-    // unbind VAO, VBO and EBO
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    return bezierVAO;
-}
-
+};
+Cube* tmp, * roomwindow, * roomfloor, * grass, *roomdoor, *walltex, *pondtex;
+Curve* fis;
+int ind = 0;
 void useShaderProgram(Shader& lightingShaderWithTexture)
 {
     lightingShaderWithTexture.use();
@@ -363,11 +430,9 @@ void useShaderProgram(Shader& lightingShaderWithTexture)
     // point light 3
     pointlight3.setUpPointLight(lightingShaderWithTexture);
 }
-Cube* tmp, * roomwindow, * roomfloor, * grass, *roomdoor, *walltex, *pondtex;
-
-int ind = 0;
 int main()
 {
+
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -464,6 +529,142 @@ int main()
     glEnableVertexAttribArray(0);
 
 
+    //cyllinder
+
+    float ver_arr[] = {
+
+    1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+    0.809017f, 1.0f, 0.587785f, 0.809017f, 1.0f, 0.587785f,
+    0.309017f, 1.0f, 0.951057f, 0.309017f, 1.0f, 0.951057f,
+    -0.309017f, 1.0f, 0.951057f, -0.309017f, 1.0f, 0.951057f,
+    -0.809017f, 1.0f, 0.587785f, -0.809017f, 1.0f, 0.587785f,
+    -1.0f, 1.0f, 1.22465e-16f, -1.0f, 1.0f, 1.22465e-16f,
+    -0.809017f, 1.0f, -0.587785f, -0.809017f, 1.0f, -0.587785f,
+    -0.309017f, 1.0f, -0.951057f, -0.309017f, 1.0f, -0.951057f,
+    0.309017f, 1.0f, -0.951057f, 0.309017f, 1.0f, -0.951057f,
+    0.809017f, 1.0f, -0.587785f, 0.809017f, 1.0f, -0.587785f,
+
+    1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f,
+    0.809017f, -1.0f, 0.587785f, 0.809017f, -1.0f, 0.587785f,
+    0.309017f, -1.0f, 0.951057f, 0.309017f, -1.0f, 0.951057f,
+    -0.309017f, -1.0f, 0.951057f, -0.309017f, -1.0f, 0.951057f,
+    -0.809017f, -1.0f, 0.587785f, -0.809017f, -1.0f, 0.587785f,
+    -1.0f, -1.0f, 1.22465e-16f, -1.0f, -1.0f, 1.22465e-16f,
+    -0.809017f, -1.0f, -0.587785f, -0.809017f, -1.0f, -0.587785f,
+    -0.309017f, -1.0f, -0.951057f, -0.309017f, -1.0f, -0.951057f,
+    0.309017f, -1.0f, -0.951057f, 0.309017f, -1.0f, -0.951057f,
+    0.809017f, -1.0f, -0.587785f, 0.809017f, -1.0f, -0.587785f,
+
+
+    1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f,
+    0.809017f, -1.0f, 0.587785f, 0.809017f, -1.0f, 0.587785f,
+    0.309017f, -1.0f, 0.951057f, 0.309017f, -1.0f, 0.951057f,
+    -0.309017f, -1.0f, 0.951057f, -0.309017f, -1.0f, 0.951057f,
+    -0.809017f, -1.0f, 0.587785f, -0.809017f, -1.0f, 0.587785f,
+    -1.0f, -1.0f, 1.22465e-16f, -1.0f, -1.0f, 1.22465e-16f,
+    -0.809017f, -1.0f, -0.587785f, -0.809017f, -1.0f, -0.587785f,
+    -0.309017f, -1.0f, -0.951057f, -0.309017f, -1.0f, -0.951057f,
+    0.309017f, -1.0f, -0.951057f, 0.309017f, -1.0f, -0.951057f,
+    0.809017f, -1.0f, -0.587785f, 0.809017f, -1.0f, -0.587785f,
+
+    1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+    0.809017f, 1.0f, 0.587785f, 0.809017f, 1.0f, 0.587785f,
+    0.309017f, 1.0f, 0.951057f, 0.309017f, 1.0f, 0.951057f,
+    -0.309017f, 1.0f, 0.951057f, -0.309017f, 1.0f, 0.951057f,
+    -0.809017f, 1.0f, 0.587785f, -0.809017f, 1.0f, 0.587785f,
+    -1.0f, 1.0f, 1.22465e-16f, -1.0f, 1.0f, 1.22465e-16f,
+    -0.809017f, 1.0f, -0.587785f, -0.809017f, 1.0f, -0.587785f,
+    -0.309017f, 1.0f, -0.951057f, -0.309017f, 1.0f, -0.951057f,
+    0.309017f, 1.0f, -0.951057f, 0.309017f, 1.0f, -0.951057f,
+    0.809017f, 1.0f, -0.587785f, 0.809017f, 1.0f, -0.587785f,
+
+
+    0.0,-1.0,0.0, 0.0,-1.0,0.0,
+    0.0,1.0,0.0, 0.0,1.0,0.0
+
+    };
+
+    unsigned int ind_arr[] = {
+        0, 11, 1,
+        11, 0, 10,
+        1, 12, 2,
+        12, 1, 11,
+        2, 13, 3,
+        13, 2, 12,
+        3, 14, 4,
+        14, 3, 13,
+        4, 15, 5,
+        15, 4, 14,
+        5, 16, 6,
+        16, 5, 15,
+        6, 17, 7,
+        17, 6, 16,
+        7, 18, 8,
+        18, 7, 17,
+        8, 19, 9,
+        19, 8, 18,
+        9, 10, 0,
+        10, 9, 19,
+
+        40,20,21,
+        40,21,22,
+        40,22,23,
+        40,23,24,
+        40,24,25,
+        40,25,26,
+        40,26,27,
+        40,27,28,
+        40,28,29,
+        40,29,20,
+
+        41,30,31,
+        41,31,32,
+        41,32,33,
+        41,33,34,
+        41,34,35,
+        41,35,36,
+        41,36,37,
+        41,37,38,
+        41,38,39,
+        41,39,30
+
+
+        /*
+        21,10,11,
+        21,11,12,
+        21,12,13,
+        21,13,14,
+        21,14,15,
+        21,15,16,
+        21,16,17,
+        21,17,18,
+        21,18,19,
+        21,19,10*/
+
+    };
+
+    glGenVertexArrays(1, &cVAO);
+    glGenBuffers(1, &cVBO);
+    glGenBuffers(1, &cEBO);
+
+    glBindVertexArray(cVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, cVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(ver_arr), ver_arr, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ind_arr), ind_arr, GL_STATIC_DRAW);
+
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // vertex normal attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)12);
+    glEnableVertexAttribArray(1);
+    //end of cylingder
+
     float cube_vertices[] = {
         // positions      // normals
         0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
@@ -553,8 +754,6 @@ int main()
     Shader lightingShader("vertexShaderForPhongShading.vs", "fragmentShaderForPhongShading.fs");
     Shader ourShader("vertexShader.vs", "fragmentShader.fs");
 
-    Sphere x = Sphere();
-    sphere = &x;
     //Sphere sphere = Sphere();
 
     string diffuseMapPath = "";
@@ -578,48 +777,48 @@ int main()
     Cube cube2 = Cube(diffMap2, specMap2, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     tmp = &cube2;
 
-    diffuseMapPath = "Window.png";
-    specularMapPath = "WindowSpec.jpg";
+    //diffuseMapPath = "Window.png";
+    //specularMapPath = "WindowSpec.jpg";
 
     unsigned int diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube3 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     roomwindow = &cube3;
 
-    diffuseMapPath = "roomFloor.png";
-    specularMapPath = "WindowSpec.jpg";
+    /*diffuseMapPath = "roomFloor.png";
+    specularMapPath = "WindowSpec.jpg";*/
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube4 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     roomfloor = &cube4;
 
-    diffuseMapPath = "grass.png";
-    specularMapPath = "WindowSpec.jpg";
+    /*diffuseMapPath = "grass.png";
+    specularMapPath = "WindowSpec.jpg";*/
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube5 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     grass = &cube5;
 
-    diffuseMapPath = "door.png";
-    specularMapPath = "WindowSpec.jpg";
+    /*diffuseMapPath = "door.png";
+    specularMapPath = "WindowSpec.jpg";*/
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube6 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     roomdoor = &cube6;
     
-    diffuseMapPath = "Walltex.png";
-    specularMapPath = "WindowSpec.jpg";
+    /*diffuseMapPath = "Walltex.png";
+    specularMapPath = "WindowSpec.jpg";*/
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube7 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     walltex = &cube7;
 
-    diffuseMapPath = "pondtex.png";
-    specularMapPath = "WindowSpec.jpg";
+    //diffuseMapPath = "pondtex.png";
+    //specularMapPath = "WindowSpec.jpg";
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -627,19 +826,33 @@ int main()
     pondtex = &cube8;
 
 
-    /*
+    /*diffuseMapPath = "pondtex.png";
+    specularMapPath = "WindowSpec.jpg";
+
+    diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Cube cube9 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+    pondtex = &cube9;*/
+
+
+    //Sphere x = Sphere();
+    //sphere = &x;
+    //
+    
     diffuseMapPath = "sun.png";
     specularMapPath = "WindowSpec.jpg";
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Sphere2 sp(1.0, 36, 18, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f), 32.0f, diffMap3, specMap3, 0, 1, 0, 1);
-    Sphere2 *sun = new Sphere2();
-    sun->setDefaults();
-    sun->setTexture(diffMap3,specMap3);
-    */ 
+    sp.setDefaults();
+    sp.setTexture(diffMap3,specMap3);
+    sphere = &sp;
+     
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    fishVAO = hollowBezier(cntrlPoints.data(), ((unsigned int)cntrlPoints.size() / 3) - 1);
+
+    Curve fish(Fish);
+    fis = &fish;
 
     // render loop
     // -----------
@@ -752,7 +965,10 @@ int main()
         //bed(cube, lightingShaderWithTexture, lightingShader, modelMatrixForContainer);
 
         useShaderProgram(lightingShaderWithTexture);
-        road(cubeVAO, lightingShader, model*glm::translate(glm::mat4(1),glm::vec3(12,0,50)), lightingShaderWithTexture);
+        
+        FazlulHaqueHall(lightingShader, model*glm::translate(glm::mat4(1),glm::vec3(12,0,50)), lightingShaderWithTexture);
+        road(lightingShader, model * glm::translate(glm::mat4(1), glm::vec3(12, 0, 50)), lightingShaderWithTexture);
+
 
         lightingShaderWithTexture.use();
         glm::mat4 floormat = glm::translate(identityMatrix, glm::vec3(-100, -1.2, -100));
@@ -838,7 +1054,68 @@ int main()
     return 0;
 }
 
-void road(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture)
+void piller(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture)
+{
+    float width = 0.2;
+    float height = 3;
+
+
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 translate = glm::mat4(1.0f);
+    glm::mat4 translate2 = glm::mat4(1.0f);
+    glm::mat4 scale = glm::mat4(1.0f);
+    scale = glm::scale(model, glm::vec3(width, height, width));
+    translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
+    model = alTogether * scale * translate;
+    useShaderProgram(lightingShader);
+    //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+    drawCylinder(cVAO, lightingShader, model, 0 / 255.0, 84 / 255.0, 147 / 255.0);
+
+}
+void FazlulHaqueHall(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture)
+{
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 translate = glm::mat4(1.0f);
+    glm::mat4 translate2 = glm::mat4(1.0f);
+    glm::mat4 translate3 = glm::mat4(1.0f);
+    glm::mat4 scale = glm::mat4(1.0f);
+    glm::mat4 rotate = glm::mat4(1.0f);
+    scale = glm::scale(model, glm::vec3(1, 1, 1));
+    translate = glm::translate(model, glm::vec3(-0.5, -2, -12));
+    model = alTogether * scale * translate;
+
+
+
+    //road(lightingShader, model, lightingShaderWithTexture);
+    for (int i = -25; i < 15; i += 10) {
+        model = glm::mat4(1.0f);
+        translate = glm::mat4(1.0f);
+        translate2 = glm::mat4(1.0f);
+        translate3 = glm::mat4(1.0f);
+        scale = glm::mat4(1.0f);
+        translate2 = glm::translate(model, glm::vec3(0, 2, i));
+
+        //scale = glm::scale(model, glm::vec3(0.1, 3, 0.1));
+        translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
+        model = alTogether * scale * translate * translate2;
+
+
+
+
+        piller(lightingShader, model, lightingShaderWithTexture);
+
+
+        translate3 = glm::translate(model, glm::vec3(-0.08, 2.8, -0.02));
+
+        scale = glm::scale(model, glm::vec3(0.3, 0.3, 0.3));
+        ////translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
+        rotate = glm::rotate(rotate, glm::radians(2.0f), glm::vec3(0, 0, 1));
+        model = translate3 * rotate * glm::mat4(1.0f);
+        sphere->drawSphereWithTexture(lightingShaderWithTexture, model);
+    }
+}
+
+void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture)
 {
     float road_width = 11;
     float road_length = 40;
@@ -854,6 +1131,7 @@ void road(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether, S
     model = alTogether * scale * translate;
     useShaderProgram(lightingShaderWithTexture);
     //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+    //road1->drawCubeWithTexture(lightingShaderWithTexture, model);
     grass->drawCubeWithTexture(lightingShaderWithTexture, model);
 
     //devider
@@ -868,6 +1146,7 @@ void road(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether, S
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+        //devider->drawCubeWithTexture(lightingShaderWithTexture, model);
         grass->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
@@ -882,6 +1161,7 @@ void road(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether, S
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+//devider->drawCubeWithTexture(lightingShaderWithTexture, model);
         grass->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
@@ -896,6 +1176,7 @@ void road(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether, S
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+//devider->drawCubeWithTexture(lightingShaderWithTexture, model);
         grass->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
@@ -910,6 +1191,7 @@ void road(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether, S
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+//devider->drawCubeWithTexture(lightingShaderWithTexture, model);
         grass->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
@@ -926,6 +1208,7 @@ void road(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether, S
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+//devider->drawCubeWithTexture(lightingShaderWithTexture, model);
         grass->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
@@ -941,6 +1224,7 @@ void road(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether, S
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+//devider->drawCubeWithTexture(lightingShaderWithTexture, model);
         grass->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
@@ -956,66 +1240,67 @@ void road(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether, S
     scale = glm::scale(model, glm::vec3(1.5, 0.3, road_length - 1 - 5));
     translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
     model = alTogether * translate2 * scale * translate;
-    //shaderActivate(lightingShader);
-    drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-    //grass->drawCubeWithTexture(lightingShaderWithTexture, model);
+    useShaderProgram(lightingShader);
+    //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+    grass->drawCubeWithTexture(lightingShaderWithTexture, model);
 
 
 
 
-    ////field
-    //float field_width = 40;
+    //field
+    float field_width = 40;
 
-    //model = glm::mat4(1.0f);
-    //translate = glm::mat4(1.0f);
-    //translate2 = glm::mat4(1.0f);
-    //scale = glm::mat4(1.0f);
-    //translate2 = glm::translate(model, glm::vec3(road_width / 2 + field_width / 2 + 0.5, 0, 0));
-    //scale = glm::scale(model, glm::vec3(field_width, road_height + 0.5, road_length - 2));
-    //translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
-    //model = alTogether * translate2 * scale * translate;
-    //useShaderProgram(lightingShader);
-    ////drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-    //field->drawCubeWithTexture(lightingShaderWithTexture, model);
-
-
-
-    ////fieldInside
-
-    //float field_width1 = 200;
-    //float height = 5;
-    //float field_length = 200;
-
-    //model = glm::mat4(1.0f);
-    //translate = glm::mat4(1.0f);
-    //translate2 = glm::mat4(1.0f);
-    //scale = glm::mat4(1.0f);
-    //translate2 = glm::translate(model, glm::vec3(30, 0, -field_length / 2 + road_length / 2));
-    //scale = glm::scale(model, glm::vec3(field_width1, -height, field_length));
-    //translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
-    //model = alTogether * translate2 * scale * translate;
-    //useShaderProgram(lightingShader);
-    //drawCube(cubeVAO, lightingShader, model, 0.6, 0.4, 0.2);
-    ////field2->drawCubeWithTexture(lightingShaderWithTexture, model);
+    model = glm::mat4(1.0f);
+    translate = glm::mat4(1.0f);
+    translate2 = glm::mat4(1.0f);
+    scale = glm::mat4(1.0f);
+    translate2 = glm::translate(model, glm::vec3(road_width / 2 + field_width / 2 + 0.5, 0, 0));
+    scale = glm::scale(model, glm::vec3(field_width, road_height + 0.5, road_length - 2));
+    translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
+    model = alTogether * translate2 * scale * translate;
+    useShaderProgram(lightingShader);
+    //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+    ///field->drawCubeWithTexture(lightingShaderWithTexture, model);
+    grass->drawCubeWithTexture(lightingShaderWithTexture, model);
 
 
+    //fieldInside
 
-    //model = glm::mat4(1.0f);
-    //translate = glm::mat4(1.0f);
-    //translate2 = glm::mat4(1.0f);
-    //scale = glm::mat4(1.0f);
-    //translate2 = glm::translate(model, glm::vec3(-(road_width / 2 + 2 + 0.5), 0, 0));
-    //scale = glm::scale(model, glm::vec3(4, road_height + 0.5, road_length - 2));
-    //translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
-    //model = alTogether * translate2 * scale * translate;
-    //useShaderProgram(lightingShader);
-    ////drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+    float field_width1 = 200;
+    float height = 5;
+    float field_length = 200;
+
+    model = glm::mat4(1.0f);
+    translate = glm::mat4(1.0f);
+    translate2 = glm::mat4(1.0f);
+    scale = glm::mat4(1.0f);
+    translate2 = glm::translate(model, glm::vec3(30, 0, -field_length / 2 + road_length / 2));
+    scale = glm::scale(model, glm::vec3(field_width1, -height, field_length));
+    translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
+    model = alTogether * translate2 * scale * translate;
+    useShaderProgram(lightingShader);
+    drawCube(cubeVAO, lightingShader, model, 0.6, 0.4, 0.2);
+    //field2->drawCubeWithTexture(lightingShaderWithTexture, model);
+
+
+
+    model = glm::mat4(1.0f);
+    translate = glm::mat4(1.0f);
+    translate2 = glm::mat4(1.0f);
+    scale = glm::mat4(1.0f);
+    translate2 = glm::translate(model, glm::vec3(-(road_width / 2 + 2 + 0.5), 0, 0));
+    scale = glm::scale(model, glm::vec3(4, road_height + 0.5, road_length - 2));
+    translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
+    model = alTogether * translate2 * scale * translate;
+    useShaderProgram(lightingShader);
+    //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
     //field1->drawCubeWithTexture(lightingShaderWithTexture, model);
+    grass->drawCubeWithTexture(lightingShaderWithTexture, model);
 
 
 
 
-    for (float i = 0; i <= 200; i += 0.5) {
+    for (float i = 0; i <= field_width; i += 0.5) {
         model = glm::mat4(1.0f);
         translate = glm::mat4(1.0f);
         translate2 = glm::mat4(1.0f);
@@ -1026,6 +1311,7 @@ void road(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether, S
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+        //devider->drawCubeWithTexture(lightingShaderWithTexture, model);
         grass->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
@@ -1041,32 +1327,19 @@ void road(unsigned int& cubeVAO, Shader& lightingShader, glm::mat4 alTogether, S
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+    //devider->drawCubeWithTexture(lightingShaderWithTexture, model);
         grass->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
+    model = glm::mat4(1.0f);
+    translate = glm::mat4(1.0f);
+    translate2 = glm::mat4(1.0f);
+    glm::mat4 rotate = glm::mat4(1.0f);
+    scale = glm::mat4(1.0f);
+    scale = glm::scale(model, glm::vec3(1, 1, 1));
 
 }
 
-void drawFish(Shader &lightingShader, glm::mat4 model)
-{
-    /// Fish
-    lightingShader.use();
-    lightingShader.setMat4("model", model);
-    lightingShader.setVec3("material.ambient", glm::vec3(1.0f, 0.6f, 0.0f));
-    lightingShader.setVec3("material.diffuse", glm::vec3(1.0f, 0.6f, 0.0f));
-    lightingShader.setVec3("material.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-    lightingShader.setFloat("material.shininess", 32.0f);
-
-    glBindVertexArray(fishVAO);
-    glDrawElements(GL_TRIANGLES,                    // primitive type
-        (unsigned int)indices.size(),          // # of indices
-        GL_UNSIGNED_INT,                 // data type
-        (void*)0);                       // offset to indices
-
-    // unbind VAO
-    glBindVertexArray(0);
-    /// End Fish
-}
 
 float angle = 0;
 float angle2 = 0;
@@ -1108,7 +1381,8 @@ void pond(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader,
     glm::mat4 rev = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
     glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(-270.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     model = alTogether * translate * rot * rev * scale;
-    drawFish(lightingShader, model);
+    //drawFish(lightingShader, model);
+    fis->draw(lightingShader, model);
 
     angle2 += 10;
     if (var > 1)
@@ -1123,7 +1397,8 @@ void pond(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader,
     translate = glm::translate(model, glm::vec3(20.0, 0.00+var, 30));
     rot = glm::rotate(glm::mat4(1.0f), glm::radians(angle2), glm::vec3(1.0f, 0.0f, 0.0f));
     model = alTogether * translate * rot * scale;
-    drawFish(lightingShader, model);
+    //drawFish(lightingShader, model);
+    fis->draw(lightingShader, model);
 
     // Boarder
     float bl = 30;
