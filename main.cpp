@@ -20,6 +20,7 @@
 #include "stb_image.h"
 #include "sphere.h"
 #include "Sphere2.h"
+#include "Pyramid.h"
 
 #include <iostream>
 
@@ -42,7 +43,8 @@ void Fan(Cube& cube, Shader& lightingShader, glm::mat4 alTogether);
 void chair(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader, glm::mat4 alTogether);
 void stair(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader, glm::mat4 alTogether);
 void pond(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader, glm::mat4 alTogether);
-void FazlulHaqueHall(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture);
+void KhanJahanAliHall(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture);
+void board(Cube &cube,Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture);
 //void drawFish(Shader& lightingShader, glm::mat4 model);
 //void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture, unsigned int& cVAO);
 void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture);
@@ -116,9 +118,9 @@ PointLight pointlight2(
 PointLight pointlight3(
 
     pointLightPositions[2].x, pointLightPositions[2].y, pointLightPositions[2].z,  // position
-    0.3f, 0.3f, 0.3f,     // ambient
-    0.3f, 0.3f, 0.3f,      // diffuse
-    0.6f, 0.6f, 0.6f,   // specular
+    0.8f, 0.8f, 0.8f,     // ambient
+    0.8f, 0.8f, 0.8f,      // diffuse
+    1.0f, 1.0f, 1.0f,   // specular
     1.0f,   //k_c
     0.09f,  //k_l
     0.032f, //k_q
@@ -279,7 +281,6 @@ private:
         xy[0] = float(x);
         xy[1] = float(y);
     }
-
     unsigned int hollowBezier(GLfloat ctrlpoints[], int L)
     {
         int i, j;
@@ -418,9 +419,12 @@ vector<float>Fish = {
 0.1300, 0.6350, 5.1000,
 0.2400, 0.5050, 5.1000,
 };
-Cube* tmp, * roomwindow, * roomfloor, * grass, *roomdoor, *walltex, *pondtex;
+Cube* tmp, * roomwindow, * roomfloor, * grass, *roomdoor, *walltex, *pondtex, *road1, *divider, *khaja;
 Curve* fis;
 int ind = 0;
+
+Pyramid *pyramid;
+
 void useShaderProgram(Shader& lightingShaderWithTexture)
 {
     lightingShaderWithTexture.use();
@@ -768,8 +772,8 @@ int main()
     Cube cube = Cube(diffMap, specMap, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 
 
-    diffuseMapPath = "Tile2.jpg";
-    specularMapPath = "whiteBackground.png";
+    /*diffuseMapPath = "Tile2.jpg";
+    specularMapPath = "whiteBackground.png";*/
 
 
     unsigned int diffMap2 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -777,16 +781,16 @@ int main()
     Cube cube2 = Cube(diffMap2, specMap2, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     tmp = &cube2;
 
-    //diffuseMapPath = "Window.png";
-    //specularMapPath = "WindowSpec.jpg";
+    /*diffuseMapPath = "Window.png";
+    specularMapPath = "WindowSpec.jpg";*/
 
     unsigned int diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube3 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     roomwindow = &cube3;
 
-    /*diffuseMapPath = "roomFloor.png";
-    specularMapPath = "WindowSpec.jpg";*/
+    //diffuseMapPath = "roomFloor.png";
+    //specularMapPath = "WindowSpec.jpg";
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -801,15 +805,15 @@ int main()
     Cube cube5 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     grass = &cube5;
 
-    /*diffuseMapPath = "door.png";
-    specularMapPath = "WindowSpec.jpg";*/
+    //diffuseMapPath = "door.png";
+    //specularMapPath = "WindowSpec.jpg";
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube6 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     roomdoor = &cube6;
-    
-    /*diffuseMapPath = "Walltex.png";
+    /*
+    diffuseMapPath = "Walltex.png";
     specularMapPath = "WindowSpec.jpg";*/
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -838,18 +842,46 @@ int main()
     //Sphere x = Sphere();
     //sphere = &x;
     //
-    
-    diffuseMapPath = "sun.png";
-    specularMapPath = "WindowSpec.jpg";
+    /*
+    diffuseMapPath = "lamp.png";
+    specularMapPath = "WindowSpec.jpg";*/
+
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Sphere2 sp(1.0, 36, 18, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f), 32.0f, diffMap3, specMap3, 0, 1, 0, 1);
     sp.setDefaults();
     sp.setTexture(diffMap3,specMap3);
     sphere = &sp;
+
+
+    //diffuseMapPath = "road.png";
+    //specularMapPath = "WindowSpec.jpg";
+
+    diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Cube cube10 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+    road1 = &cube10;
+
+    //diffuseMapPath = "divider.png";
+    //specularMapPath = "WindowSpec.jpg";
+
+    diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Cube cube11 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+    divider = &cube11;
+
+    diffuseMapPath = "khaja.png";
+    specularMapPath = "WindowSpec.jpg";
+
+    diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+    Cube cube12 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+    khaja = &cube12;
      
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    Pyramid abc("tree.png");
+    pyramid = &abc;
 
     Curve fish(Fish);
     fis = &fish;
@@ -966,8 +998,11 @@ int main()
 
         useShaderProgram(lightingShaderWithTexture);
         
-        FazlulHaqueHall(lightingShader, model*glm::translate(glm::mat4(1),glm::vec3(12,0,50)), lightingShaderWithTexture);
-        road(lightingShader, model * glm::translate(glm::mat4(1), glm::vec3(12, 0, 50)), lightingShaderWithTexture);
+
+        board(cube, lightingShader, model * glm::translate(glm::mat4(1), glm::vec3(4, 0, 26)), lightingShaderWithTexture);
+        
+        KhanJahanAliHall(lightingShader, model*glm::translate(glm::mat4(1),glm::vec3(12.5, 2, 54)), lightingShaderWithTexture);
+        road(lightingShader, model * glm::translate(glm::mat4(1), glm::vec3(12, -0.95, 50)), lightingShaderWithTexture);
 
 
         lightingShaderWithTexture.use();
@@ -1053,6 +1088,157 @@ int main()
     glfwTerminate();
     return 0;
 }
+void board(Cube &cube, Shader &lightingShader, glm::mat4 alTogether, Shader &lightingShaderWithTexture)
+{
+    float height = 3;
+    float width = 15;
+    float pur = 0.3;
+
+    float pilheight = 10;
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 translate = glm::mat4(1.0f);
+    glm::mat4 translate2 = glm::mat4(1.0f);
+    glm::mat4 scale = glm::mat4(1.0f);
+    translate = glm::translate(model, glm::vec3(0.0, 0.0 + pilheight, 0.0));
+    scale = glm::scale(model, glm::vec3(width, height, pur));
+    glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = alTogether * translate * rot * scale;
+    khaja->drawCubeWithTexture(lightingShaderWithTexture, model);
+    //cube.drawCube2(lightingShader, model, 0.3, 0.6,0.9);
+
+
+    // piller 1
+    model = glm::mat4(1.0f);
+    translate = glm::mat4(1.0f);
+    translate2 = glm::mat4(1.0f);
+    scale = glm::mat4(1.0f);
+    translate = glm::translate(model, glm::vec3(0.0, 0.0, 0.0));
+    scale = glm::scale(model, glm::vec3(0.5, pilheight, 1));
+    rot = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = alTogether * translate * rot * scale;
+    drawCylinder(cVAO, lightingShader, model, 0.3, 0.6, 0.9);
+
+    float treeheight = 5;
+
+    /// Tree
+
+    for (float dist = 8.0; dist <= 35; dist += 10)
+    {
+        model = glm::mat4(1.0f);
+        translate = glm::mat4(1.0f);
+        translate2 = glm::mat4(1.0f);
+        scale = glm::mat4(1.0f);
+        translate = glm::translate(model, glm::vec3(-3, 0.0, dist));
+        scale = glm::scale(model, glm::vec3(0.5, treeheight, 1));
+        rot = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = alTogether * translate * rot * scale;
+        drawCylinder(cVAO, lightingShader, model, 0.5, 0.5, 0.5);
+        useShaderProgram(lightingShaderWithTexture);
+        for (float i = 0.0; i <= 5; i += 1.2)
+        {
+            model = glm::mat4(1.0f);
+            translate = glm::mat4(1.0f);
+            translate2 = glm::mat4(1.0f);
+            scale = glm::mat4(1.0f);
+            translate = glm::translate(model, glm::vec3(-3.0, treeheight-i, dist));
+            scale = glm::scale(model, glm::vec3(5, 3.2, 5));
+            model = alTogether * translate * scale;
+            pyramid->draw(lightingShaderWithTexture, model);
+        }
+    }
+    // row
+    for (float dist = -3; dist >= -40; dist -= 10)
+    {
+        model = glm::mat4(1.0f);
+        translate = glm::mat4(1.0f);
+        translate2 = glm::mat4(1.0f);
+        scale = glm::mat4(1.0f);
+        translate = glm::translate(model, glm::vec3(0+dist, 0.0, 38));
+        scale = glm::scale(model, glm::vec3(0.5, treeheight, 1));
+        rot = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = alTogether * translate * rot * scale;
+        drawCylinder(cVAO, lightingShader, model, 0.5, 0.5, 0.5);
+        useShaderProgram(lightingShaderWithTexture);
+        for (float i = 0.0; i <= 5; i += 1.2)
+        {
+            model = glm::mat4(1.0f);
+            translate = glm::mat4(1.0f);
+            translate2 = glm::mat4(1.0f);
+            scale = glm::mat4(1.0f);
+            translate = glm::translate(model, glm::vec3(0+dist, treeheight - i, 38));
+            scale = glm::scale(model, glm::vec3(5, 3.2, 5));
+            model = alTogether * translate * scale;
+            pyramid->draw(lightingShaderWithTexture, model);
+        }
+    }
+    
+
+    // piller 2
+    model = glm::mat4(1.0f);
+    translate = glm::mat4(1.0f);
+    translate2 = glm::mat4(1.0f);
+    scale = glm::mat4(1.0f);
+    translate = glm::translate(model, glm::vec3(width, 0.0, 0.0));
+    scale = glm::scale(model, glm::vec3(0.5, pilheight, 1));
+    rot = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = alTogether * translate * rot * scale;
+    drawCylinder(cVAO, lightingShader, model, 0.3, 0.6, 0.9);
+
+    // Tree 2
+    for (float dist = 8.0; dist <= 35; dist += 10)
+    {
+        model = glm::mat4(1.0f);
+        translate = glm::mat4(1.0f);
+        translate2 = glm::mat4(1.0f);
+        scale = glm::mat4(1.0f);
+        translate = glm::translate(model, glm::vec3(width + 3, 0.0, dist));
+        scale = glm::scale(model, glm::vec3(0.5, treeheight, 1));
+        rot = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = alTogether * translate * rot * scale;
+        drawCylinder(cVAO, lightingShader, model, 0.5, 0.5, 0.5);
+        useShaderProgram(lightingShaderWithTexture);
+        for (float i = 0.0; i <= 5; i += 1.2)
+        {
+            model = glm::mat4(1.0f);
+            translate = glm::mat4(1.0f);
+            translate2 = glm::mat4(1.0f);
+            scale = glm::mat4(1.0f);
+            translate = glm::translate(model, glm::vec3(width +3.0, treeheight - i, dist));
+            scale = glm::scale(model, glm::vec3(5, 3.2, 5));
+            model = alTogether * translate * scale;
+            pyramid->draw(lightingShaderWithTexture, model);
+        }
+    }
+
+    // row
+
+    for (float dist = -3; dist >= -40; dist -= 10)
+    {
+        model = glm::mat4(1.0f);
+        translate = glm::mat4(1.0f);
+        translate2 = glm::mat4(1.0f);
+        scale = glm::mat4(1.0f);
+        translate = glm::translate(model, glm::vec3(0 - dist + width, 0.0, 38));
+        scale = glm::scale(model, glm::vec3(0.5, treeheight, 1));
+        rot = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = alTogether * translate * rot * scale;
+        drawCylinder(cVAO, lightingShader, model, 0.5, 0.5, 0.5);
+        useShaderProgram(lightingShaderWithTexture);
+        for (float i = 0.0; i <= 5; i += 1.2)
+        {
+            model = glm::mat4(1.0f);
+            translate = glm::mat4(1.0f);
+            translate2 = glm::mat4(1.0f);
+            scale = glm::mat4(1.0f);
+            translate = glm::translate(model, glm::vec3(0 - dist + width, treeheight - i, 38));
+            scale = glm::scale(model, glm::vec3(5, 3.2, 5));
+            model = alTogether * translate * scale;
+            pyramid->draw(lightingShaderWithTexture, model);
+        }
+    }
+
+}
+
 
 void piller(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture)
 {
@@ -1072,7 +1258,7 @@ void piller(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShader
     drawCylinder(cVAO, lightingShader, model, 0 / 255.0, 84 / 255.0, 147 / 255.0);
 
 }
-void FazlulHaqueHall(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture)
+void KhanJahanAliHall(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWithTexture)
 {
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 translate = glm::mat4(1.0f);
@@ -1084,8 +1270,6 @@ void FazlulHaqueHall(Shader& lightingShader, glm::mat4 alTogether, Shader& light
     translate = glm::translate(model, glm::vec3(-0.5, -2, -12));
     model = alTogether * scale * translate;
 
-
-
     //road(lightingShader, model, lightingShaderWithTexture);
     for (int i = -25; i < 15; i += 10) {
         model = glm::mat4(1.0f);
@@ -1093,17 +1277,13 @@ void FazlulHaqueHall(Shader& lightingShader, glm::mat4 alTogether, Shader& light
         translate2 = glm::mat4(1.0f);
         translate3 = glm::mat4(1.0f);
         scale = glm::mat4(1.0f);
-        translate2 = glm::translate(model, glm::vec3(0, 2, i));
+        translate2 = glm::translate(model, glm::vec3(0, 0, i));
 
         //scale = glm::scale(model, glm::vec3(0.1, 3, 0.1));
         translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
         model = alTogether * scale * translate * translate2;
 
-
-
-
         piller(lightingShader, model, lightingShaderWithTexture);
-
 
         translate3 = glm::translate(model, glm::vec3(-0.08, 2.8, -0.02));
 
@@ -1131,9 +1311,8 @@ void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWi
     model = alTogether * scale * translate;
     useShaderProgram(lightingShaderWithTexture);
     //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-    //road1->drawCubeWithTexture(lightingShaderWithTexture, model);
-    grass->drawCubeWithTexture(lightingShaderWithTexture, model);
-
+    road1->drawCubeWithTexture(lightingShaderWithTexture, model);
+    
     //devider
     for (int i = (-road_length / 2); i < (road_length / 2) - 5; i++) {
         model = glm::mat4(1.0f);
@@ -1146,8 +1325,7 @@ void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWi
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-        //devider->drawCubeWithTexture(lightingShaderWithTexture, model);
-        grass->drawCubeWithTexture(lightingShaderWithTexture, model);
+        divider->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
     for (int i = (-road_length / 2); i < (road_length / 2) - 1 - 5; i++) {
@@ -1161,8 +1339,7 @@ void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWi
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-//devider->drawCubeWithTexture(lightingShaderWithTexture, model);
-        grass->drawCubeWithTexture(lightingShaderWithTexture, model);
+        divider->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
     for (int i = -road_length / 2; i < road_length / 2; i++) {
@@ -1176,8 +1353,7 @@ void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWi
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-//devider->drawCubeWithTexture(lightingShaderWithTexture, model);
-        grass->drawCubeWithTexture(lightingShaderWithTexture, model);
+        divider->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
     for (int i = -road_length / 2; i < road_length / 2; i++) {
@@ -1191,9 +1367,8 @@ void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWi
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-//devider->drawCubeWithTexture(lightingShaderWithTexture, model);
-        grass->drawCubeWithTexture(lightingShaderWithTexture, model);
-    }
+        divider->drawCubeWithTexture(lightingShaderWithTexture, model);
+     }
 
 
 
@@ -1208,9 +1383,8 @@ void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWi
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-//devider->drawCubeWithTexture(lightingShaderWithTexture, model);
-        grass->drawCubeWithTexture(lightingShaderWithTexture, model);
-    }
+        divider->drawCubeWithTexture(lightingShaderWithTexture, model);
+     }
 
 
     for (float i = -1; i <= 1; i += 0.5) {
@@ -1224,8 +1398,7 @@ void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWi
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-//devider->drawCubeWithTexture(lightingShaderWithTexture, model);
-        grass->drawCubeWithTexture(lightingShaderWithTexture, model);
+        divider->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
 
@@ -1247,21 +1420,21 @@ void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWi
 
 
 
-    //field
     float field_width = 40;
+    ////field
 
-    model = glm::mat4(1.0f);
-    translate = glm::mat4(1.0f);
-    translate2 = glm::mat4(1.0f);
-    scale = glm::mat4(1.0f);
-    translate2 = glm::translate(model, glm::vec3(road_width / 2 + field_width / 2 + 0.5, 0, 0));
-    scale = glm::scale(model, glm::vec3(field_width, road_height + 0.5, road_length - 2));
-    translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
-    model = alTogether * translate2 * scale * translate;
-    useShaderProgram(lightingShader);
-    //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-    ///field->drawCubeWithTexture(lightingShaderWithTexture, model);
-    grass->drawCubeWithTexture(lightingShaderWithTexture, model);
+    //model = glm::mat4(1.0f);
+    //translate = glm::mat4(1.0f);
+    //translate2 = glm::mat4(1.0f);
+    //scale = glm::mat4(1.0f);
+    //translate2 = glm::translate(model, glm::vec3(road_width / 2 + field_width / 2 + 0.5, 0, 0));
+    //scale = glm::scale(model, glm::vec3(field_width, road_height + 0.5, road_length - 2));
+    //translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
+    //model = alTogether * translate2 * scale * translate;
+    //useShaderProgram(lightingShader);
+    ////drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+    /////field->drawCubeWithTexture(lightingShaderWithTexture, model);
+    //grass->drawCubeWithTexture(lightingShaderWithTexture, model);
 
 
     //fieldInside
@@ -1270,34 +1443,32 @@ void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWi
     float height = 5;
     float field_length = 200;
 
-    model = glm::mat4(1.0f);
-    translate = glm::mat4(1.0f);
-    translate2 = glm::mat4(1.0f);
-    scale = glm::mat4(1.0f);
-    translate2 = glm::translate(model, glm::vec3(30, 0, -field_length / 2 + road_length / 2));
-    scale = glm::scale(model, glm::vec3(field_width1, -height, field_length));
-    translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
-    model = alTogether * translate2 * scale * translate;
-    useShaderProgram(lightingShader);
-    drawCube(cubeVAO, lightingShader, model, 0.6, 0.4, 0.2);
-    //field2->drawCubeWithTexture(lightingShaderWithTexture, model);
+    //model = glm::mat4(1.0f);
+    //translate = glm::mat4(1.0f);
+    //translate2 = glm::mat4(1.0f);
+    //scale = glm::mat4(1.0f);
+    //translate2 = glm::translate(model, glm::vec3(30, 0, -field_length / 2 + road_length / 2));
+    //scale = glm::scale(model, glm::vec3(field_width1, -height, field_length));
+    //translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
+    //model = alTogether * translate2 * scale * translate;
+    //useShaderProgram(lightingShader);
+    //drawCube(cubeVAO, lightingShader, model, 0.6, 0.4, 0.2);
+    ////field2->drawCubeWithTexture(lightingShaderWithTexture, model);
 
 
 
-    model = glm::mat4(1.0f);
-    translate = glm::mat4(1.0f);
-    translate2 = glm::mat4(1.0f);
-    scale = glm::mat4(1.0f);
-    translate2 = glm::translate(model, glm::vec3(-(road_width / 2 + 2 + 0.5), 0, 0));
-    scale = glm::scale(model, glm::vec3(4, road_height + 0.5, road_length - 2));
-    translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
-    model = alTogether * translate2 * scale * translate;
-    useShaderProgram(lightingShader);
-    //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-    //field1->drawCubeWithTexture(lightingShaderWithTexture, model);
-    grass->drawCubeWithTexture(lightingShaderWithTexture, model);
-
-
+    //model = glm::mat4(1.0f);
+    //translate = glm::mat4(1.0f);
+    //translate2 = glm::mat4(1.0f);
+    //scale = glm::mat4(1.0f);
+    //translate2 = glm::translate(model, glm::vec3(-(road_width / 2 + 2 + 0.5), 0, 0));
+    //scale = glm::scale(model, glm::vec3(4, road_height + 0.5, road_length - 2));
+    //translate = glm::translate(model, glm::vec3(-0.5, 0, -0.5));
+    //model = alTogether * translate2 * scale * translate;
+    //useShaderProgram(lightingShader);
+    ////drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
+    ////field1->drawCubeWithTexture(lightingShaderWithTexture, model);
+    //grass->drawCubeWithTexture(lightingShaderWithTexture, model);
 
 
     for (float i = 0; i <= field_width; i += 0.5) {
@@ -1311,12 +1482,12 @@ void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWi
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-        //devider->drawCubeWithTexture(lightingShaderWithTexture, model);
-        grass->drawCubeWithTexture(lightingShaderWithTexture, model);
+        divider->drawCubeWithTexture(lightingShaderWithTexture, model);
+        //grass->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
 
-    for (float i = 0; i <= 4; i += 0.5) {
+    for (float i = 0; i <= field_width; i += 0.5) {
         model = glm::mat4(1.0f);
         translate = glm::mat4(1.0f);
         translate2 = glm::mat4(1.0f);
@@ -1327,8 +1498,7 @@ void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWi
         model = alTogether * translate2 * scale * translate;
         useShaderProgram(lightingShader);
         //drawCube(cubeVAO, lightingShader, model, 0.471, 0.196, 0.039);
-    //devider->drawCubeWithTexture(lightingShaderWithTexture, model);
-        grass->drawCubeWithTexture(lightingShaderWithTexture, model);
+        divider->drawCubeWithTexture(lightingShaderWithTexture, model);
     }
 
     model = glm::mat4(1.0f);
@@ -1395,8 +1565,9 @@ void pond(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader,
     scale = glm::mat4(1.0f);
     scale = glm::scale(model, glm::vec3(0.8, 1.5, 1.5));
     translate = glm::translate(model, glm::vec3(20.0, 0.00+var, 30));
+    translate2 = glm::translate(model, glm::vec3(0.0, 2, 0));
     rot = glm::rotate(glm::mat4(1.0f), glm::radians(angle2), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = alTogether * translate * rot * scale;
+    model = alTogether * translate * rot * translate2 * scale;
     //drawFish(lightingShader, model);
     fis->draw(lightingShader, model);
 
@@ -1525,7 +1696,6 @@ void chair(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader
 
     
 }
-
 void Fan(Cube& cube, Shader& lightingShader, glm::mat4 alTogether)
 {
     float bladel = 1.5;
@@ -1596,7 +1766,6 @@ void Fan(Cube& cube, Shader& lightingShader, glm::mat4 alTogether)
     //model = alTogether * translate2 * scale * translate;
     //cube.drawCube2(lightingShader, model, 0.804, 0.361, 0.361);
 }
-
 void bed(Cube &cube, Shader & lightingShaderWithTexture, Shader& lightingShader, glm::mat4 alTogether)
 {
     float baseHeight = 0.3;
@@ -1751,8 +1920,6 @@ void table(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader
     cube.drawCube2(lightingShader, model, 0.804, 0.361, 0.361);
 
 }
-
-
 void door(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader, glm::mat4 alTogether)
 {
     float dy = 3.0;
@@ -2075,16 +2242,16 @@ void processInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        camera.ProcessKeyboard(FORWARD, deltaTime + 0.5);
+        camera.ProcessKeyboard(FORWARD, deltaTime + 0.4);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        camera.ProcessKeyboard(BACKWARD, deltaTime + 0.5);
+        camera.ProcessKeyboard(BACKWARD, deltaTime + 0.4);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera.ProcessKeyboard(LEFT, deltaTime + 0.5);
+        camera.ProcessKeyboard(LEFT, deltaTime + 0.4);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera.ProcessKeyboard(RIGHT, deltaTime + 0.5);
+        camera.ProcessKeyboard(RIGHT, deltaTime + 0.4);
     }
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
         camera.ProcessKeyboard(UP, deltaTime);
