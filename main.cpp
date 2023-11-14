@@ -69,14 +69,14 @@ float scale_X = 1.0;
 float scale_Y = 1.0;
 float scale_Z = 1.0;
 
+float eyeX = 8.0f, eyeY = 7.0f, eyeZ = 90.0f;
+float lookAtX = 0.0, lookAtY = 0.0, lookAtZ = 0.0;
 // camera
-Camera camera(glm::vec3(0.0f, 1.1f, 5.2f));
+Camera camera(glm::vec3(eyeX, eyeY, eyeZ));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
-float eyeX = 0.0, eyeY = 1.0, eyeZ = 30.0;
-float lookAtX = 0.0, lookAtY = 0.0, lookAtZ = 0.0;
 glm::vec3 V = glm::vec3(0.0f, 1.0f, 0.0f);
 BasicCamera basic_camera(eyeX, eyeY, eyeZ, lookAtX, lookAtY, lookAtZ, V);
 float rotateFan = 0;
