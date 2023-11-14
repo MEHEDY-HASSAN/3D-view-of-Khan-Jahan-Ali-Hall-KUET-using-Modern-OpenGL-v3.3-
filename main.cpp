@@ -84,8 +84,8 @@ Sphere2 *sphere;
 
 // positions of the point lights
 glm::vec3 pointLightPositions[] = {
-    glm::vec3(3.50f,  5.50f,  -1.0f), /// Spot
-    glm::vec3(0.5f,  1.5f,  0.0f),   /// Point
+    glm::vec3(3.50f,  5.50f,  20.0f), /// Spot
+    glm::vec3(-1.0f,  1.5f,  0.0f),   /// Point
     glm::vec3(3.0f,  30,  0.5f), /// Sun
     //glm::vec3(-1.5f,  -1.5f,  0.0f)
 };
@@ -118,13 +118,77 @@ PointLight pointlight2(
 PointLight pointlight3(
 
     pointLightPositions[2].x, pointLightPositions[2].y, pointLightPositions[2].z,  // position
-    0.8f, 0.8f, 0.8f,     // ambient
-    0.8f, 0.8f, 0.8f,      // diffuse
-    1.0f, 1.0f, 1.0f,   // specular
+    0.7f, 0.7f, 0.7f,     // ambient
+    0.7f, 0.7f, 0.7f,      // diffuse
+    0.7f, 0.7f, 0.7f,   // specular
     1.0f,   //k_c
     0.09f,  //k_l
     0.032f, //k_q
-    3       // light number
+    100       // light number
+);
+
+
+PointLight pointlight4(
+
+    12.5-0.08-0.5, 2.8+2, 54-0.02-0.5-25,  // position
+    //1.0f, 1.0f, 1.0f,     // ambient
+    //1.0f, 1.0f, 1.0f,      // diffuse
+    //1.0f, 1.0f, 1.0f,        // specular
+    0.8f, 0.8f, 0.8f,     // ambient
+    0.8f, 0.8f, 0.8f,      // diffuse
+    1.0f, 1.0f, 1.0f,        // specular
+    1.0f,   //k_c
+    0.09f,  //k_l
+    0.032f, //k_q
+    4       // light number
+);
+
+
+
+PointLight pointlight5(
+
+    12.5 - 0.08 - 0.5, 2.8 + 2, 54 - 0.02 - 0.5 - 15,  // position
+    //1.0f, 1.0f, 1.0f,     // ambient
+    //1.0f, 1.0f, 1.0f,      // diffuse
+    //1.0f, 1.0f, 1.0f,        // specular
+    0.8f, 0.8f, 0.8f,     // ambient
+    0.8f, 0.8f, 0.8f,      // diffuse
+    1.0f, 1.0f, 1.0f,        // specular
+    1.0f,   //k_c
+    0.09f,  //k_l
+    0.032f, //k_q
+    5       // light number
+);
+
+PointLight pointlight6(
+
+    12.5 - 0.08 - 0.5, 2.8 + 2, 54 - 0.02 - 0.5 - 5,  // position
+    //1.0f, 1.0f, 1.0f,     // ambient
+    //1.0f, 1.0f, 1.0f,      // diffuse
+    //1.0f, 1.0f, 1.0f,        // specular
+    0.8f, 0.8f, 0.8f,     // ambient
+    0.8f, 0.8f, 0.8f,      // diffuse
+    1.0f, 1.0f, 1.0f,        // specular
+    1.0f,   //k_c
+    0.09f,  //k_l
+    0.032f, //k_q
+    6       // light number
+);
+
+
+PointLight pointlight7(
+
+    12.5 - 0.08 - 0.5, 2.8 + 2, 54 - 0.02 - 0.5 +5,  // position
+    //1.0f, 1.0f, 1.0f,     // ambient
+    //1.0f, 1.0f, 1.0f,      // diffuse
+    //1.0f, 1.0f, 1.0f,        // specular
+    0.8f, 0.8f, 0.8f,     // ambient
+    0.8f, 0.8f, 0.8f,      // diffuse
+    1.0f, 1.0f, 1.0f,        // specular
+    1.0f,   //k_c
+    0.09f,  //k_l
+    0.032f, //k_q
+    7       // light number
 );
 
 // light settings
@@ -433,6 +497,12 @@ void useShaderProgram(Shader& lightingShaderWithTexture)
     pointlight2.setUpPointLight(lightingShaderWithTexture);
     // point light 3
     pointlight3.setUpPointLight(lightingShaderWithTexture);
+    pointlight4.setUpPointLight(lightingShaderWithTexture);
+
+    pointlight5.setUpPointLight(lightingShaderWithTexture);
+
+    pointlight6.setUpPointLight(lightingShaderWithTexture);
+    pointlight7.setUpPointLight(lightingShaderWithTexture);
 }
 int main()
 {
@@ -772,8 +842,8 @@ int main()
     Cube cube = Cube(diffMap, specMap, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 
 
-    /*diffuseMapPath = "Tile2.jpg";
-    specularMapPath = "whiteBackground.png";*/
+    diffuseMapPath = "Tile2.jpg";
+    specularMapPath = "whiteBackground.png";
 
 
     unsigned int diffMap2 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -781,48 +851,48 @@ int main()
     Cube cube2 = Cube(diffMap2, specMap2, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     tmp = &cube2;
 
-    /*diffuseMapPath = "Window.png";
-    specularMapPath = "WindowSpec.jpg";*/
+    diffuseMapPath = "Window.png";
+    specularMapPath = "WindowSpec.jpg";
 
     unsigned int diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     unsigned int specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube3 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     roomwindow = &cube3;
 
-    //diffuseMapPath = "roomFloor.png";
-    //specularMapPath = "WindowSpec.jpg";
+    diffuseMapPath = "roomFloor.png";
+    specularMapPath = "WindowSpec.jpg";
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube4 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     roomfloor = &cube4;
 
-    /*diffuseMapPath = "grass.png";
-    specularMapPath = "WindowSpec.jpg";*/
+    diffuseMapPath = "grass.png";
+    specularMapPath = "WindowSpec.jpg";
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube5 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     grass = &cube5;
 
-    //diffuseMapPath = "door.png";
-    //specularMapPath = "WindowSpec.jpg";
+    diffuseMapPath = "door.png";
+    specularMapPath = "WindowSpec.jpg";
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube6 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     roomdoor = &cube6;
-    /*
+    
     diffuseMapPath = "Walltex.png";
-    specularMapPath = "WindowSpec.jpg";*/
+    specularMapPath = "WindowSpec.jpg";
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube7 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     walltex = &cube7;
 
-    //diffuseMapPath = "pondtex.png";
-    //specularMapPath = "WindowSpec.jpg";
+    diffuseMapPath = "pondtex.png";
+    specularMapPath = "WindowSpec.jpg";
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -842,9 +912,8 @@ int main()
     //Sphere x = Sphere();
     //sphere = &x;
     //
-    /*
     diffuseMapPath = "lamp.png";
-    specularMapPath = "WindowSpec.jpg";*/
+    specularMapPath = "WindowSpec.jpg";
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -853,17 +922,18 @@ int main()
     sp.setTexture(diffMap3,specMap3);
     sphere = &sp;
 
+    Sphere sun(1.0f,36,18,glm::vec3(1.0f, 1.0f, 1.0f),glm::vec3(1.0f,1.0f,1.0f),glm::vec3(1.0f, 1.0f,1.0f),32.0f);
 
-    //diffuseMapPath = "road.png";
-    //specularMapPath = "WindowSpec.jpg";
+    diffuseMapPath = "road.png";
+    specularMapPath = "WindowSpec.jpg";
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     Cube cube10 = Cube(diffMap3, specMap3, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f);
     road1 = &cube10;
 
-    //diffuseMapPath = "divider.png";
-    //specularMapPath = "WindowSpec.jpg";
+    diffuseMapPath = "divider.png";
+    specularMapPath = "WindowSpec.jpg";
 
     diffMap3 = loadTexture(diffuseMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     specMap3 = loadTexture(specularMapPath.c_str(), GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
@@ -1060,12 +1130,17 @@ int main()
                 //    useShaderProgram(lightingShader);
                 if (pointlight3.isOn())
                 {
-                    ourShader.setVec3("color", glm::vec3(0.8f, 0.8f, 0.8f));
+                    sun.setColor(glm::vec3(1.0f, 0.8f, 0.0f));
+                    sun.drawSphere(lightingShader, model * tempt * glm::scale(glm::mat4(1.0f), glm::vec3(6, 6, 6)));
+                    //sphere->drawSphere(lightingShader, model * tempt);
+                    //ourShader.setVec3("color", glm::vec3(0.8f, 0.8f, 0.8f));
                 }
                 else
                 {
+                    //sun.setColor(glm::vec3(0.1, 0.1, 0.1));
+                    //sun.drawSphere(lightingShader, model* tempt*glm::scale(glm::mat4(1.0f), glm::vec3(6, 6, 6)));
                     glClearColor(0.6f, 0.4f, 0.2f, 1.0f);
-                    ourShader.setVec3("color", glm::vec3(0.2f, 0.2f, 0.2f));
+                    //ourShader.setVec3("color", glm::vec3(0.2f, 0.2f, 0.2f));
                 }
             }
 
@@ -1510,7 +1585,6 @@ void road(Shader& lightingShader, glm::mat4 alTogether, Shader& lightingShaderWi
 
 }
 
-
 float angle = 0;
 float angle2 = 0;
 float var = 0;
@@ -1613,7 +1687,6 @@ void pond(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader,
     model = alTogether * translate * scale;
     cube.drawCube2(lightingShader, model, 1.0f, 1.0f, 1.0f);
 }
-
 void chair(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader, glm::mat4 alTogether)
 {
     float backheight = 0.5;
@@ -2131,31 +2204,32 @@ void room(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader,
     useShaderProgram(lightingShader);
     
 
+    float up = 0.03;
     // Bed
     model = glm::mat4(1.0f);
     translate = glm::mat4(1.0f);
-    translate = glm::translate(model, glm::vec3(1.2, 0, 2.0));
+    translate = glm::translate(model, glm::vec3(1.2, up, 2.0));
     glm::mat4 rotateYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = alTogether * translate * rotateYMatrix * glm::mat4(1.0f);
     bed(cube, lightingShaderWithTexture, lightingShader, model);
 
     model = glm::mat4(1.0f);
     translate = glm::mat4(1.0f);
-    translate = glm::translate(model, glm::vec3(length - 1.6, 0, 2.0));
+    translate = glm::translate(model, glm::vec3(length - 1.6, up, 2.0));
     rotateYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = alTogether * translate * rotateYMatrix * glm::mat4(1.0f);
     bed(cube, lightingShaderWithTexture, lightingShader, model);
 
     model = glm::mat4(1.0f);
     translate = glm::mat4(1.0f);
-    translate = glm::translate(model, glm::vec3(1.2, 0, width - 1.5));
+    translate = glm::translate(model, glm::vec3(1.2, up, width - 1.5));
     rotateYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = alTogether * translate * rotateYMatrix * glm::mat4(1.0f);
     bed(cube, lightingShaderWithTexture, lightingShader, model);
 
     model = glm::mat4(1.0f);
     translate = glm::mat4(1.0f);
-    translate = glm::translate(model, glm::vec3(length - 1.6, 0, width - 1.5));
+    translate = glm::translate(model, glm::vec3(length - 1.6, up, width - 1.5));
     rotateYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = alTogether * translate * rotateYMatrix * glm::mat4(1.0f);
     bed(cube, lightingShaderWithTexture, lightingShader, model);
@@ -2163,7 +2237,7 @@ void room(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader,
     // table
     model = glm::mat4(1.0f);
     translate = glm::mat4(1.0f);
-    translate = glm::translate(model, glm::vec3(length / 2 - width / 6, 0.5 + sam, 0.1));
+    translate = glm::translate(model, glm::vec3(length / 2 - width / 6, 4*up+0.5 + sam, 0.1));
     rotateYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = alTogether * translate * rotateYMatrix * glm::mat4(1.0f);
     table(cube, lightingShaderWithTexture, lightingShader, model);
@@ -2171,7 +2245,7 @@ void room(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader,
     //chair
     model = glm::mat4(1.0f);
     translate = glm::mat4(1.0f);
-    translate = glm::translate(model, glm::vec3(length / 2 - width / 6, 0.0, 0.1 + 1));
+    translate = glm::translate(model, glm::vec3(length / 2 - width / 6, up+0.0, 0.1 + 1));
     rotateYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = alTogether * translate * rotateYMatrix * glm::mat4(1.0f);
     chair(cube, lightingShaderWithTexture, lightingShader, model);
@@ -2180,7 +2254,7 @@ void room(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader,
     // table
     model = glm::mat4(1.0f);
     translate = glm::mat4(1.0f);
-    translate = glm::translate(model, glm::vec3(length / 2 + width / 8, 0.5+sam, 0.1));
+    translate = glm::translate(model, glm::vec3(length / 2 + width / 8, 4*up + 0.5+sam, 0.1));
     rotateYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = alTogether * translate * rotateYMatrix * glm::mat4(1.0f);
     table(cube, lightingShaderWithTexture, lightingShader, model);
@@ -2188,14 +2262,14 @@ void room(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader,
     //chair
     model = glm::mat4(1.0f);
     translate = glm::mat4(1.0f);
-    translate = glm::translate(model, glm::vec3(length / 2 + width / 8, 0.0, 0.1 + 1));
+    translate = glm::translate(model, glm::vec3(length / 2 + width / 8, up + 0.0, 0.1 + 1));
     rotateYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = alTogether * translate * rotateYMatrix * glm::mat4(1.0f);
     chair(cube, lightingShaderWithTexture, lightingShader, model);
     // table
     model = glm::mat4(1.0f);
     translate = glm::mat4(1.0f);
-    translate = glm::translate(model, glm::vec3(0.1, 0.5+sam, width / 2));
+    translate = glm::translate(model, glm::vec3(0.1, 0.5+sam+ 4*up, width / 2));
     rotateYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = alTogether * translate * rotateYMatrix * glm::mat4(1.0f);
     table(cube, lightingShaderWithTexture, lightingShader, model);
@@ -2203,7 +2277,7 @@ void room(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader,
     //chair
     model = glm::mat4(1.0f);
     translate = glm::mat4(1.0f);
-    translate = glm::translate(model, glm::vec3(0.1+0.7, 0.0, width / 2 + 0.5));
+    translate = glm::translate(model, glm::vec3(0.1+0.7, 0.0, up + width / 2 + 0.5));
     rotateYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = alTogether * translate * rotateYMatrix * glm::mat4(1.0f);
     chair(cube, lightingShaderWithTexture, lightingShader, model);
@@ -2211,7 +2285,7 @@ void room(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader,
     //table
     model = glm::mat4(1.0f);
     translate = glm::mat4(1.0f);
-    translate = glm::translate(model, glm::vec3(length - 1.0, 0.5+sam, width / 2));
+    translate = glm::translate(model, glm::vec3(length - 1.0, 0.5+sam + 4*up, width / 2));
     rotateYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = alTogether * translate * rotateYMatrix * glm::mat4(1.0f);
     table(cube, lightingShaderWithTexture, lightingShader, model);
@@ -2219,7 +2293,7 @@ void room(Cube& cube, Shader& lightingShaderWithTexture, Shader& lightingShader,
     //chair
     model = glm::mat4(1.0f);
     translate = glm::mat4(1.0f);
-    translate = glm::translate(model, glm::vec3(length - 0.1 - 1.0, 0.0, width / 2));
+    translate = glm::translate(model, glm::vec3(length - 0.1 - 1.0, up + 0.0, width / 2));
     rotateYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = alTogether * translate * rotateYMatrix * glm::mat4(1.0f);
     chair(cube, lightingShaderWithTexture, lightingShader, model);
@@ -2482,7 +2556,7 @@ void processInput(GLFWwindow* window)
     }
     if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
     {
-        rotateFan += 5.0f;
+        rotateFan += 10.0f;
     }
     if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
     {

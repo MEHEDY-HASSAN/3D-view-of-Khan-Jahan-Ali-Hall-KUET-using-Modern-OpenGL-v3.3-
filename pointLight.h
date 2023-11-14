@@ -59,7 +59,7 @@ public:
             lightingShader.setFloat("spotLights[0].k_l", k_l);
             lightingShader.setFloat("spotLights[0].k_q", k_q);
         }
-        else if (lightNumber == 3)
+        else if (lightNumber == 100)
         {
             lightingShader.setVec3("directionLights[0].position", position);
             lightingShader.setVec3("directionLights[0].ambient", ambientOn * ambient);
@@ -68,6 +68,16 @@ public:
             lightingShader.setFloat("directionLights[0].k_c", k_c);
             lightingShader.setFloat("directionLights[0].k_l", k_l);
             lightingShader.setFloat("directionLights[0].k_q", k_q);
+        }
+        if (lightNumber >= 4) {
+            string lightN = to_string(lightNumber);
+            lightingShader.setVec3("pointLights[" + lightN + "].position", position);
+            lightingShader.setVec3("pointLights[" + lightN + "].ambient", ambientOn * ambient);
+            lightingShader.setVec3("pointLights[" + lightN + "].diffuse", diffuseOn * diffuse);
+            lightingShader.setVec3("pointLights[" + lightN + "].specular", specularOn * specular);
+            lightingShader.setFloat("pointLights[" + lightN + "].k_c", k_c);
+            lightingShader.setFloat("pointLights[" + lightN + "].k_l", k_l);
+            lightingShader.setFloat("pointLights[" + lightN + "].k_q", k_q);
         }
         /*
         else

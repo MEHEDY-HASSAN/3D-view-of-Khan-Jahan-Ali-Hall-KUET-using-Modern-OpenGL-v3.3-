@@ -64,9 +64,9 @@ in vec3 Normal;
 in vec2 TexCoords;
 
 uniform vec3 viewPos;
-uniform PointLight pointLights[1];
-uniform SpotLight spotLights[1];
-uniform DirectionLight directionLights[1];
+uniform PointLight pointLights[10];
+uniform SpotLight spotLights[10];
+uniform DirectionLight directionLights[10];
 uniform Material material;
 
 // function prototypes
@@ -74,7 +74,7 @@ vec3 CalcPointLight(Material material, PointLight light, vec3 N, vec3 fragPos, v
 vec3 CalcSpotLight(Material material, SpotLight light, vec3 N, vec3 fragPos, vec3 V);
 vec3 CalcDirectLight(Material material, DirectionLight light, vec3 N, vec3 fragPos, vec3 V);
 
-vec3 spotPosition = vec3(0.0,-5.0,-5.0);
+vec3 spotPosition = vec3(0.0,-5.0,20.0);
 
 
 //uniform vec3 viewPos;
@@ -93,7 +93,11 @@ void main()
     // point lights
     
     result += CalcSpotLight(material, spotLights[0], N, FragPos, V);
-    result += CalcPointLight(material, pointLights[0], N, FragPos, V);  
+    result += CalcPointLight(material, pointLights[0], N, FragPos, V);
+    result += CalcPointLight(material, pointLights[4], N, FragPos, V);
+    result += CalcPointLight(material, pointLights[5], N, FragPos, V);
+    result += CalcPointLight(material, pointLights[6], N, FragPos, V);
+    result += CalcPointLight(material, pointLights[7], N, FragPos, V);
     result += CalcDirectLight(material, directionLights[0], N, FragPos, V);
     FragColor = vec4(result, 1.0);
 }
