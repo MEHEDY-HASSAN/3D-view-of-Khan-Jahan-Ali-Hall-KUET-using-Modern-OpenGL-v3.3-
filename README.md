@@ -18,3 +18,5 @@ Night <br>
 Day <br>
 ![image](https://github.com/MEHEDY-HASSAN/3D-view-of-Khan-Jahan-Ali-Hall-KUET-using-Modern-OpenGL-v3.3-/assets/67474089/66634802-cefe-4d24-a37b-05b5d69fb723)
 
+River and Fish <br>
+![ss2](https://github.com/MEHEDY-HASSAN/3D-view-of-Khan-Jahan-Ali-Hall-KUET-using-Modern-OpenGL-v3.3-/assets/67474089/4e438a44-1027-4529-8df5-8e0b866412fa)
