@@ -1,5 +1,7 @@
 # Modern-OpenGL-project
 
+This is a Computer Graphics project developed using OpenGL version 3.3.
+
 *Check out this project presentation for a quick overview of key features:*
 [Project Presentation Slide.pptx](https://github.com/MEHEDY-HASSAN/Modern-OpenGL-project/files/13353659/Project.Presentation.Slide.pptx)
 
